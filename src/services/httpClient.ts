@@ -5,7 +5,7 @@ class HttpClient {
 
   constructor() {
     // 开发环境使用 /api 前缀，生产环境使用真实后端地址
-    this.baseURL = import.meta.env.DEV ? '/api' : 'http://113.45.24.31:8080';
+    this.baseURL = '/api/';
   }
 
   private async request<T>(

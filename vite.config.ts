@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       // 代理所有 /api 请求到后端，并移除 /api 前缀
-      '/api': {
+      '/api/': {
         target: 'http://113.45.24.31:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),

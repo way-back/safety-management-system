@@ -67,7 +67,7 @@ export const downloadApi = fileApi; // 下载别名
 // 导出配置信息
 export const API_CONFIG = {
   USE_REAL_API,
-  BASE_URL: import.meta.env.DEV ? '/api (代理到后端)' : 'http://113.45.24.31:8080',
+  BASE_URL: '/api/',
   ENV: import.meta.env.MODE,
 };
 

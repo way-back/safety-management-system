@@ -64,7 +64,7 @@ export const patrolPointApi = {
   // 获取巡查点位二维码 - GET /qrcode/{pointId}
   getPatrolPointQrCode: async (pointId: number): Promise<Blob> => {
     const token = localStorage.getItem('token');
-    const baseURL = import.meta.env.DEV ? '/api' : 'http://113.45.24.31:8080';
+    const baseURL = '/api/';
     const response = await fetch(`${baseURL}/campus/point/qrcode/${pointId}`, {
       method: 'GET',
       headers: {
@@ -95,7 +95,7 @@ export const patrolPointApi = {
     const token = localStorage.getItem('token');
     const queryString = Object.keys(queryParams).length > 0 ? `?${new URLSearchParams(queryParams).toString()}` : '';
 
-    const baseURL = import.meta.env.DEV ? '/api' : 'http://113.45.24.31:8080';
+    const baseURL = '/api/';
     const response = await fetch(`${baseURL}/campus/point/batchDownloadQrCode${queryString}`, {
       method: 'POST',
       headers: {
