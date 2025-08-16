@@ -124,7 +124,7 @@ const AppContent: React.FC = () => {
       {
         key: '/regions',
         icon: <EnvironmentOutlined />,
-        label: '部门管理',
+        label: '区域管理',
       },
       {
         key: '/points',

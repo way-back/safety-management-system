@@ -107,10 +107,10 @@ const SafetyOfficerManagement: React.FC = () => {
     }
   };
 
-  // 获取部门列表（用于表格分页显示）
+  // 获取区域列表（用于表格分页显示）
   const fetchDepartments = async () => {
     try {
-      // 注意：由于API文档中没有分页的部门列表接口，这里使用树形接口
+      // 注意：由于API文档中没有分页的区域列表接口，这里使用树形接口
       const response = await departmentApi.getDepartmentTree();
       setDepartments(response.data || []);
       // setDepartments(response.data?.map(dept => ({
@@ -118,7 +118,7 @@ const SafetyOfficerManagement: React.FC = () => {
       //   value: dept.deptId!,
       // })) || []);
     } catch (error) {
-      message.error('获取部门列表失败');
+      message.error('获取区域列表失败');
     }
   };
 
@@ -245,6 +245,51 @@ const SafetyOfficerManagement: React.FC = () => {
     return false; // 阻止自动上传
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      // const response = await fetch('/api//campus/point/importTemplate', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   // body: JSON.stringify(params),
+      // });
+      const response: any = await securityGuardApi.importTemplate();
+  
+      // if (!response.ok) {
+      //   throw new Error(`请求失败: ${response.status}`);
+      // }
+  
+      // 1. 获取二进制数据
+      // const blob = await response.blob();
+      const blob = response;
+  
+      // 2. 从 Content-Disposition 提取文件名（处理 URL 编码）
+      // const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = '安全员管理-导入模板.xlsx'; // 默认文件名
+  
+      // if (contentDisposition) {
+      //   // 匹配 filename= 或 filename*=utf-8'' 后的部分
+      //   const match = contentDisposition.match(/filename[*=utf-8'']?["']?(.+?)["']?$/);
+      //   if (match && match[1]) {
+      //     fileName = decodeURIComponent(match[1]); // 解码中文文件名
+      //   }
+      // }
+  
+      // 3. 触发浏览器下载
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName; // 使用解码后的文件名
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+  
+    } catch (error) {
+      console.error('下载失败:', error);
+      message.error('下载失败');
+    }
+  }
+
   const columns = [
     {
       title: '序号',
@@ -259,7 +304,7 @@ const SafetyOfficerManagement: React.FC = () => {
       key: 'name',
     },
     {
-      title: '部门',
+      title: '区域',
       dataIndex: 'deptName',
       key: 'deptName',
       render: (text: string) => text || '-',
@@ -292,7 +337,7 @@ const SafetyOfficerManagement: React.FC = () => {
           <Select
             // mode="multiple"
             placeholder="查看点位信息"
-            style={{ width: 180 }}
+            style={{ width: 130 }}
             // disabled
             // defaultValue={points.length > 0 ? points[0].pointId : ""} // 默认值为第一个点位
             options={points.map(point => ({
@@ -301,7 +346,7 @@ const SafetyOfficerManagement: React.FC = () => {
             }))}
           />
           // <Select
-          //   placeholder="请选择部门"
+          //   placeholder="请选择区域"
           //   allowClear
           //   style={{ width: 180 }}
           //   // options={departments}
@@ -400,6 +445,9 @@ const SafetyOfficerManagement: React.FC = () => {
               >
                 <Button icon={<UploadOutlined />}>批量导入</Button>
               </Upload>
+              <Button icon={<DownloadOutlined />} onClick={handleDownloadTemplate}>
+                下载导入模板
+              </Button>
             </Space>
           </Col>
           <Col>
@@ -457,18 +505,18 @@ const SafetyOfficerManagement: React.FC = () => {
             <Col span={12}>
               {/* <Form.Item
                 name="dept"
-                label="部门"
-                rules={[{ required: true, message: '请输入部门' }]}
+                label="区域"
+                rules={[{ required: true, message: '请输入区域' }]}
               >
-                <Input placeholder="请输入部门" />
+                <Input placeholder="请输入区域" />
               </Form.Item> */}
               <Form.Item
                 name="deptId"
-                label="部门"
-                rules={[{ required: true, message: '请选择部门' }]}
+                label="区域"
+                rules={[{ required: true, message: '请选择区域' }]}
               >
                 <Select
-                  placeholder="请选择部门"
+                  placeholder="请选择区域"
                   allowClear
                   // showSearch
                   filterOption={(input, option) =>

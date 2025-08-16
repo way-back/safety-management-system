@@ -124,7 +124,7 @@ const PointManagement: React.FC = () => {
     }
   };
 
-  // 获取部门列表
+  // 获取区域列表
   // const fetchDepartments = async () => {
   //   try {
   //     const response = await departmentApi.getDepartments({});
@@ -133,14 +133,14 @@ const PointManagement: React.FC = () => {
   //       value: dept.deptId,
   //     })) || []);
   //   } catch (error) {
-  //     console.error('获取部门列表失败:', error);
+  //     console.error('获取区域列表失败:', error);
   //   }
   // };
 
-  // 获取部门列表（用于表格分页显示）
+  // 获取区域列表（用于表格分页显示）
   const fetchDepartments = async () => {
     try {
-      // 注意：由于API文档中没有分页的部门列表接口，这里使用树形接口
+      // 注意：由于API文档中没有分页的区域列表接口，这里使用树形接口
       const response = await departmentApi.getDepartmentTree();
       setDepartments(response.data || []);
       // setDepartments(response.data?.map(dept => ({
@@ -148,7 +148,7 @@ const PointManagement: React.FC = () => {
       //   value: dept.deptId!,
       // })) || []);
     } catch (error) {
-      message.error('获取部门列表失败');
+      message.error('获取区域列表失败');
     }
   };
 
@@ -346,6 +346,82 @@ const PointManagement: React.FC = () => {
     return false;
   };
 
+  // 下载点位导入模板
+  // const handleDownloadTemplate = async () => {
+  //   try {
+  //     await patrolPointApi.importTemplate();
+  //     message.success('模板下载成功');
+  //   } catch (error) {
+  //     message.error('模板下载失败，请稍后重试');
+  //   }
+  // };
+
+  // 下载点位导入模板
+// const handleDownloadTemplate = async () => {
+//   try {
+//     const response = await patrolPointApi.importTemplate();
+//     // console.log("template res", response);
+//     // const blob = new Blob([response], { type: 'application/octet-stream' });
+//     // const url = window.URL.createObjectURL(blob);
+//     // const link = document.createElement('a');
+//     // link.href = url;
+//     // link.setAttribute('download', '点位导入模板.xlsx'); // 设置下载文件名
+//     // document.body.appendChild(link);
+//     // link.click();
+//     // document.body.removeChild(link);
+//     console.log("response blob", response);
+//     message.success('模板下载成功');
+//   } catch (error) {
+//     console.log(error);
+//     message.error('模板下载失败，请稍后重试');
+//   }
+// };
+
+const handleDownloadTemplate = async () => {
+  try {
+    // const response = await fetch('/api//campus/point/importTemplate', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   // body: JSON.stringify(params),
+    // });
+    const response: any = await patrolPointApi.importTemplate();
+
+    // if (!response.ok) {
+    //   throw new Error(`请求失败: ${response.status}`);
+    // }
+
+    // 1. 获取二进制数据
+    // const blob = await response.blob();
+    const blob = response;
+
+    // 2. 从 Content-Disposition 提取文件名（处理 URL 编码）
+    // const contentDisposition = response.headers.get('Content-Disposition');
+    let fileName = '点位管理-导入模板.xlsx'; // 默认文件名
+
+    // if (contentDisposition) {
+    //   // 匹配 filename= 或 filename*=utf-8'' 后的部分
+    //   const match = contentDisposition.match(/filename[*=utf-8'']?["']?(.+?)["']?$/);
+    //   if (match && match[1]) {
+    //     fileName = decodeURIComponent(match[1]); // 解码中文文件名
+    //   }
+    // }
+
+    // 3. 触发浏览器下载
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName; // 使用解码后的文件名
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error('下载失败:', error);
+    message.error('下载失败');
+  }
+}
+
   // const columns = [
   //   {
   //     title: '序号',
@@ -370,7 +446,7 @@ const PointManagement: React.FC = () => {
   //   //   width: 150,
   //   // },
   //   {
-  //     title: '所属部门',
+  //     title: '所属区域',
   //     dataIndex: 'deptName',
   //     key: 'deptName',
   //     width: 150,
@@ -466,7 +542,7 @@ const PointManagement: React.FC = () => {
       },
     },
     {
-      title: '所属部门',
+      title: '所属区域',
       dataIndex: 'deptName',
       key: 'deptName',
       width: 150,
@@ -583,9 +659,9 @@ const PointManagement: React.FC = () => {
           <Form.Item name="pointCode" label="点位编码">
             <Input placeholder="请输入点位编码" allowClear />
           </Form.Item>
-          <Form.Item name="deptId" label="所属部门">
+          <Form.Item name="deptId" label="所属区域">
             <Select
-              placeholder="请选择部门"
+              placeholder="请选择区域"
               allowClear
               style={{ width: 180 }}
               // options={departments}
@@ -619,6 +695,13 @@ const PointManagement: React.FC = () => {
               >
                 <Button icon={<UploadOutlined />}>批量导入</Button>
               </Upload>
+              {/* 新增下载导入模板按钮 */}
+              <Button
+                icon={<DownloadOutlined />}
+                onClick={handleDownloadTemplate}
+              >
+                下载导入模板
+              </Button>
             </Space>
           </Col>
           <Col>
@@ -686,11 +769,11 @@ const PointManagement: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="deptId"
-                label="所属部门"
-                rules={[{ required: true, message: '请选择所属部门' }]}
+                label="所属区域"
+                rules={[{ required: true, message: '请选择所属区域' }]}
               >
                 <Select
-                  placeholder="请选择部门"
+                  placeholder="请选择区域"
                   allowClear
                   // showSearch
                   // options={departments}
@@ -700,9 +783,9 @@ const PointManagement: React.FC = () => {
                   }))}
                 />
               </Form.Item>
-              {/* <Form.Item name="deptId" label="所属部门">
+              {/* <Form.Item name="deptId" label="所属区域">
                 <Select
-                  placeholder="请选择部门"
+                  placeholder="请选择区域"
                   allowClear
                   style={{ width: 180 }}
                   // options={departments}
@@ -826,11 +909,11 @@ const PointManagement: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="regionId"
-                label="所属学院/部门"
-                rules={[{ required: true, message: '请选择所属学院/部门' }]}
+                label="所属学院/区域"
+                rules={[{ required: true, message: '请选择所属学院/区域' }]}
               >
                 <Select
-                  placeholder="请选择学院/部门"
+                  placeholder="请选择学院/区域"
                   options={options.regions}
                 />
               </Form.Item>
