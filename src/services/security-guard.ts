@@ -47,6 +47,12 @@ export const securityGuardApi = {
     await httpClient.delete(`/campus/guard/${idsStr}`);
   },
 
+  // 下载点位导入模板
+  importTemplate: async (): Promise<Blob> => {
+    const response: any = await httpClient.download('/campus/guard/importTemplate');
+    return response;
+  },
+
   // 导出安全员信息列表 - POST /campus/guard/export
   exportSecurityGuards: async (params?: Omit<SecurityGuardQuery, keyof import('../types/common').BaseQuery>): Promise<Blob> => {
     const queryParams: Record<string, any> = {};

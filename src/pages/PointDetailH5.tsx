@@ -107,7 +107,7 @@ const PointDetailH5: React.FC = () => {
               <span className="value">{point.pointCode}</span>
             </div>
             <div className="info-item">
-              <span className="label">所属学院/部门</span>
+              <span className="label">所属学院/区域</span>
               <span className="value">{point.deptName}</span>
             </div>
             <div className="info-item">
@@ -175,11 +175,11 @@ const PointDetailH5: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 部门 */}
+                {/* 区域 */}
                 <div className="contact-item">
                   <div className="contact-info">
                     <span className="contact-icon">🏢</span>
-                    <span>部门：{officer.deptName || officer.department}</span>
+                    <span>区域：{officer.deptName || officer.department}</span>
                   </div>
                 </div>
 
@@ -264,11 +264,11 @@ const PointDetailH5: React.FC = () => {
                 )}
               </div>
 
-              {/* 部门信息 - 支持新旧字段 */}
+              {/* 区域信息 - 支持新旧字段 */}
               {/* <div className="contact-item">
                 <div className="contact-info">
                   <span className="contact-icon">📧</span>
-                  <span>部门：{officer.deptName || officer.department}</span>
+                  <span>区域：{officer.deptName || officer.department}</span>
                 </div>
               </div> */}
             </div>

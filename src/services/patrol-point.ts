@@ -43,6 +43,17 @@ export const patrolPointApi = {
     await httpClient.post(`/campus/point/unbind/${pointId}`);
   },
 
+  //下载点位导入模版
+  // importTemplate: async (): Promise<any> => {
+  //   const res = await httpClient.post('/campus/point/importTemplate');
+  //   return res;
+  // },
+  // 下载点位导入模板
+  importTemplate: async (): Promise<Blob> => {
+    const response: any = await httpClient.download('/campus/point/importTemplate');
+    return response;
+  },
+
   // 校验点位编码唯一性 - GET /campus/point/checkPointCodeUnique
   checkPointCodeUnique: async (pointCode: string): Promise<{ unique: boolean }> => {
     const response = await httpClient.get<{ unique: boolean }>('/campus/point/checkPointCodeUnique', { pointCode });
