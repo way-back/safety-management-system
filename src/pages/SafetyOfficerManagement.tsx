@@ -43,13 +43,18 @@ const SafetyOfficerManagement: React.FC = () => {
   const [searchForm] = Form.useForm();
   const [departments, setDepartments] = useState<Department[]>([]);
 
-  const [pointsMap, setPointsMap] = useState<Map<number, PatrolPoint[]>>(new Map());
   // 选择使用的API
   const currentApi = securityGuardApi;
 
   // 添加错误弹窗状态
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // 添加点位信息弹窗状态
+  const [pointsModalVisible, setPointsModalVisible] = useState(false);
+  const [selectedGuardPoints, setSelectedGuardPoints] = useState<PatrolPoint[]>([]);
+  const [selectedGuardName, setSelectedGuardName] = useState('');
+  const [pointsLoading, setPointsLoading] = useState(false);
 
   // 获取安全员列表
   const fetchOfficers = async () => {
@@ -75,13 +80,13 @@ const SafetyOfficerManagement: React.FC = () => {
         pageSize: queryParams.pageSize || 10,
       }));
 
-      const newMap = new Map<number, PatrolPoint[]>();
-      for (let securityGuard of response.data) {
-        const res = await securityGuardApi.getPatrolPointsByGuardId(securityGuard.guardId!);
-        newMap.set(securityGuard.guardId!, res.data);
-      }
-
-      setPointsMap(newMap);
+      // 移除自动查询点位信息的逻辑，改为点击按钮时查询
+      // const newMap = new Map<number, PatrolPoint[]>();
+      // for (let securityGuard of response.data) {
+      //   const res = await securityGuardApi.getPatrolPointsByGuardId(securityGuard.guardId!);
+      //   newMap.set(securityGuard.guardId!, res.data);
+      // }
+      // setPointsMap(newMap);
     } catch (error) {
       message.error('获取安全员列表失败');
     } finally {
@@ -89,10 +94,24 @@ const SafetyOfficerManagement: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    console.log("pointsMap", pointsMap);
-    // console.log(pointsMap.get(1)?[1].deptName);
-  }, [pointsMap]);
+
+
+  // 查看点位信息
+  const handleViewPoints = async (record: SecurityGuard) => {
+    setPointsLoading(true);
+    setSelectedGuardName(record.name || '');
+    setPointsModalVisible(true);
+
+    try {
+      const res = await securityGuardApi.getPatrolPointsByGuardId(record.guardId!);
+      setSelectedGuardPoints(res.data || []);
+    } catch (error) {
+      message.error('获取点位信息失败');
+      setSelectedGuardPoints([]);
+    } finally {
+      setPointsLoading(false);
+    }
+  };
 
   // 获取点位列表
   const fetchPoints = async () => {
@@ -101,7 +120,7 @@ const SafetyOfficerManagement: React.FC = () => {
       // 实际使用时需要根据后端提供的接口调整
       const queryParams: PatrolPointPageQuery = {
         pageNum: 1,
-        pageSize: 1000000,
+        pageSize: 1000,
       };
       const res = await patrolPointApi.getPatrolPoints(queryParams);
       console.log("getPoints", res);
@@ -340,35 +359,19 @@ const SafetyOfficerManagement: React.FC = () => {
       render: (text: string) => text || '-',
     },
     {
-      title: '点位', // 新增点位列
+      title: '点位信息',
       key: 'points',
-      width: 180,
-      render: (_: any, record: SecurityGuard) => {
-        const points = pointsMap.get(record.guardId!) || [];
-        return (
-          <Select
-            // mode="multiple"
-            placeholder="查看点位信息"
-            style={{ width: 130 }}
-            // disabled
-            // defaultValue={points.length > 0 ? points[0].pointId : ""} // 默认值为第一个点位
-            options={points.map(point => ({
-              label: point.building || '未知楼栋',
-              // value: point.pointId,
-            }))}
-          />
-          // <Select
-          //   placeholder="请选择区域"
-          //   allowClear
-          //   style={{ width: 180 }}
-          //   // options={departments}
-          //   options={departments.map(dept => ({
-          //     label: dept.deptName,
-          //     value: dept.deptId,
-          //   }))}
-          // />
-        );
-      },
+      width: 120,
+      render: (_: any, record: SecurityGuard) => (
+        <Button
+          type="link"
+          size="small"
+          onClick={() => handleViewPoints(record)}
+          loading={pointsLoading && selectedGuardName === record.name}
+        >
+          查看点位
+        </Button>
+      ),
     },
     {
       title: '备注', // 新增备注列
@@ -616,6 +619,89 @@ const SafetyOfficerManagement: React.FC = () => {
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 点位信息弹窗 */}
+      <Modal
+        title={`${selectedGuardName} 的点位信息`}
+        open={pointsModalVisible}
+        onCancel={() => setPointsModalVisible(false)}
+        footer={null}
+        destroyOnClose
+        width={800}
+        loading={pointsLoading}
+      >
+        <Table
+          columns={[
+            {
+              title: '序号',
+              dataIndex: 'index',
+              key: 'index',
+              width: 60,
+              render: (_: any, __: any, index: number) => index + 1,
+            },
+            {
+              title: '点位编码',
+              dataIndex: 'pointCode',
+              key: 'pointCode',
+              width: 120,
+            },
+            {
+              title: '所属区域',
+              dataIndex: 'deptName',
+              key: 'deptName',
+              width: 120,
+            },
+            {
+              title: '楼栋',
+              dataIndex: 'building',
+              key: 'building',
+              width: 120,
+              render: (text: string) => text || '-',
+            },
+            {
+              title: '楼层',
+              dataIndex: 'floor',
+              key: 'floor',
+              width: 80,
+              render: (text: string) => text || '-',
+            },
+            {
+              title: '房间号',
+              dataIndex: 'roomNumber',
+              key: 'roomNumber',
+              width: 100,
+              render: (text: string) => text || '-',
+            },
+            {
+              title: '详细名称',
+              dataIndex: 'detailName',
+              key: 'detailName',
+              width: 150,
+              render: (text: string) => text || '-',
+            },
+            {
+              title: '用途',
+              dataIndex: 'purpose',
+              key: 'purpose',
+              width: 120,
+              render: (text: string) => text || '-',
+            },
+            {
+              title: '备注',
+              dataIndex: 'remark',
+              key: 'remark',
+              width: 120,
+              render: (text: string) => text || '-',
+            },
+          ]}
+          dataSource={selectedGuardPoints}
+          rowKey="pointId"
+          pagination={false}
+          bordered
+          size="small"
+          scroll={{ x: 900 }}
+        />
       </Modal>
 
       {/* 错误弹窗 */}
