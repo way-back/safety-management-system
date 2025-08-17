@@ -1,5 +1,6 @@
 import { httpClient } from './httpClient';
 import { PatrolPoint, PatrolPointQuery, BatchDownloadQrCodeParams, PatrolPointPageQuery, PatrolPointForm } from '../types/patrol-point';
+import { ApiResponse } from '../types';
 
 // 巡查点位管理API - 根据API文档
 export const patrolPointApi = {
@@ -43,14 +44,15 @@ export const patrolPointApi = {
     await httpClient.post(`/campus/point/unbind/${pointId}`);
   },
 
-  //下载点位导入模版
-  // importTemplate: async (): Promise<any> => {
-  //   const res = await httpClient.post('/campus/point/importTemplate');
-  //   return res;
-  // },
   // 下载点位导入模板
   importTemplate: async (): Promise<Blob> => {
     const response: any = await httpClient.download('/campus/point/importTemplate');
+    return response;
+  },
+
+  //导入点位数据
+  importData: async (file: File, params?: Record<string, any>): Promise<ApiResponse> => {
+    const response: any = await httpClient.upload('/campus/point/importData', file, params);
     return response;
   },
 
