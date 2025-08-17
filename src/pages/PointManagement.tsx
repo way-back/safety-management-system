@@ -54,6 +54,10 @@ const PointManagement: React.FC = () => {
 
   const [securityGuards, setSecurityGuards] = useState<SecurityGuard[]>([]);
 
+  // 添加错误弹窗状态
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   // 获取安全员列表
   const fetchSecurityGuards = async () => {
     try {
@@ -338,56 +342,63 @@ const PointManagement: React.FC = () => {
       const res = await patrolPointApi.importData(file, { updateSupport: true });
       // const data = await readExcelFile(file);
       // console.log('导入的数据:', data);
-      if(res.code === 0) {
+      if (res.code === 0) {
         message.success(`导入成功`);
         fetchPoints();
+      } else {
+        // 处理业务错误
+        setErrorMessage(res.msg || '导入失败');
+        setErrorModalVisible(true);
       }
-    } catch (error) {
-      message.error('导入失败，请检查文件格式');
+    } catch (error: any) {
+      // 处理网络错误或其他异常
+      const errorMsg = error.message || '导入失败，请检查文件格式';
+      setErrorMessage(errorMsg);
+      setErrorModalVisible(true);
     }
     return false;
   };
 
-const handleDownloadTemplate = async () => {
-  try {
-    // const response = await fetch('/api//campus/point/importTemplate', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   // body: JSON.stringify(params),
-    // });
-    const response: any = await patrolPointApi.importTemplate();
+  const handleDownloadTemplate = async () => {
+    try {
+      // const response = await fetch('/api//campus/point/importTemplate', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   // body: JSON.stringify(params),
+      // });
+      const response: any = await patrolPointApi.importTemplate();
 
-    // 1. 获取二进制数据
-    // const blob = await response.blob();
-    const blob = response;
+      // 1. 获取二进制数据
+      // const blob = await response.blob();
+      const blob = response;
 
-    // 2. 从 Content-Disposition 提取文件名（处理 URL 编码）
-    // const contentDisposition = response.headers.get('Content-Disposition');
-    let fileName = '点位管理-导入模板.xlsx'; // 默认文件名
+      // 2. 从 Content-Disposition 提取文件名（处理 URL 编码）
+      // const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = '点位管理-导入模板.xlsx'; // 默认文件名
 
-    // if (contentDisposition) {
-    //   // 匹配 filename= 或 filename*=utf-8'' 后的部分
-    //   const match = contentDisposition.match(/filename[*=utf-8'']?["']?(.+?)["']?$/);
-    //   if (match && match[1]) {
-    //     fileName = decodeURIComponent(match[1]); // 解码中文文件名
-    //   }
-    // }
+      // if (contentDisposition) {
+      //   // 匹配 filename= 或 filename*=utf-8'' 后的部分
+      //   const match = contentDisposition.match(/filename[*=utf-8'']?["']?(.+?)["']?$/);
+      //   if (match && match[1]) {
+      //     fileName = decodeURIComponent(match[1]); // 解码中文文件名
+      //   }
+      // }
 
-    // 3. 触发浏览器下载
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName; // 使用解码后的文件名
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+      // 3. 触发浏览器下载
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName; // 使用解码后的文件名
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
 
-  } catch (error) {
-    console.error('下载失败:', error);
-    message.error('下载失败');
+    } catch (error) {
+      console.error('下载失败:', error);
+      message.error('下载失败');
+    }
   }
-}
 
   const columns = [
     {
@@ -837,6 +848,60 @@ const handleDownloadTemplate = async () => {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* 错误弹窗 */}
+      <Modal
+        title="导入失败"
+        open={errorModalVisible}
+        onCancel={() => setErrorModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setErrorModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        width={600}
+      >
+        <div style={{
+          background: '#fff2f0',
+          border: '1px solid #ffccc7',
+          borderRadius: '6px',
+          padding: '16px',
+          marginBottom: '16px'
+        }}>
+          <div style={{
+            color: '#cf1322',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            marginBottom: '8px'
+          }}>
+            ❌ 导入过程中发生错误
+          </div>
+          <div
+            style={{
+              color: '#434343',
+              fontSize: '14px',
+              lineHeight: '1.6'
+            }}
+            dangerouslySetInnerHTML={{ __html: errorMessage }}
+          />
+        </div>
+        <div style={{
+          background: '#f6ffed',
+          border: '1px solid #b7eb8f',
+          borderRadius: '6px',
+          padding: '12px',
+          fontSize: '13px',
+          color: '#52c41a'
+        }}>
+          💡 请检查以下内容：
+          <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
+            <li>确保Excel文件格式正确</li>
+            <li>检查必填字段是否完整</li>
+            <li>验证数据格式是否符合要求</li>
+            <li>确认关联的部门信息是否存在</li>
+          </ul>
+        </div>
       </Modal>
     </div>
   );

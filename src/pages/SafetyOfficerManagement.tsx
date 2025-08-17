@@ -47,6 +47,10 @@ const SafetyOfficerManagement: React.FC = () => {
   // 选择使用的API
   const currentApi = securityGuardApi;
 
+  // 添加错误弹窗状态
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   // 获取安全员列表
   const fetchOfficers = async () => {
     setLoading(true);
@@ -239,9 +243,16 @@ const SafetyOfficerManagement: React.FC = () => {
       if (res.code === 0) {
         message.success(`导入成功`);
         fetchOfficers();
+      } else {
+        // 处理业务错误
+        setErrorMessage(res.msg || '导入失败');
+        setErrorModalVisible(true);
       }
-    } catch (error) {
-      message.error('导入失败，请检查文件格式');
+    } catch (error: any) {
+      // 处理网络错误或其他异常
+      const errorMsg = error.message || '导入失败，请检查文件格式';
+      setErrorMessage(errorMsg);
+      setErrorModalVisible(true);
     }
     return false;
   };
@@ -605,6 +616,60 @@ const SafetyOfficerManagement: React.FC = () => {
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 错误弹窗 */}
+      <Modal
+        title="导入失败"
+        open={errorModalVisible}
+        onCancel={() => setErrorModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setErrorModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        width={600}
+      >
+        <div style={{
+          background: '#fff2f0',
+          border: '1px solid #ffccc7',
+          borderRadius: '6px',
+          padding: '16px',
+          marginBottom: '16px'
+        }}>
+          <div style={{
+            color: '#cf1322',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            marginBottom: '8px'
+          }}>
+            ❌ 导入过程中发生错误
+          </div>
+          <div
+            style={{
+              color: '#434343',
+              fontSize: '14px',
+              lineHeight: '1.6'
+            }}
+            dangerouslySetInnerHTML={{ __html: errorMessage }}
+          />
+        </div>
+        <div style={{
+          background: '#f6ffed',
+          border: '1px solid #b7eb8f',
+          borderRadius: '6px',
+          padding: '12px',
+          fontSize: '13px',
+          color: '#52c41a'
+        }}>
+          💡 请检查以下内容：
+          <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
+            <li>确保Excel文件格式正确</li>
+            <li>检查必填字段是否完整</li>
+            <li>验证数据格式是否符合要求</li>
+            <li>确认关联的部门信息是否存在</li>
+          </ul>
+        </div>
       </Modal>
     </div>
   );
