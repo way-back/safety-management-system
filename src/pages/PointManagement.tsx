@@ -335,47 +335,18 @@ const PointManagement: React.FC = () => {
   // 批量导入
   const handleImport = async (file: File) => {
     try {
-      const data = await readExcelFile(file);
-
-      console.log('导入的数据:', data);
-      message.success(`成功导入 ${data.length} 条记录`);
-      fetchPoints();
+      const res = await patrolPointApi.importData(file, { updateSupport: true });
+      // const data = await readExcelFile(file);
+      // console.log('导入的数据:', data);
+      if(res.code === 0) {
+        message.success(`导入成功`);
+        fetchPoints();
+      }
     } catch (error) {
       message.error('导入失败，请检查文件格式');
     }
     return false;
   };
-
-  // 下载点位导入模板
-  // const handleDownloadTemplate = async () => {
-  //   try {
-  //     await patrolPointApi.importTemplate();
-  //     message.success('模板下载成功');
-  //   } catch (error) {
-  //     message.error('模板下载失败，请稍后重试');
-  //   }
-  // };
-
-  // 下载点位导入模板
-// const handleDownloadTemplate = async () => {
-//   try {
-//     const response = await patrolPointApi.importTemplate();
-//     // console.log("template res", response);
-//     // const blob = new Blob([response], { type: 'application/octet-stream' });
-//     // const url = window.URL.createObjectURL(blob);
-//     // const link = document.createElement('a');
-//     // link.href = url;
-//     // link.setAttribute('download', '点位导入模板.xlsx'); // 设置下载文件名
-//     // document.body.appendChild(link);
-//     // link.click();
-//     // document.body.removeChild(link);
-//     console.log("response blob", response);
-//     message.success('模板下载成功');
-//   } catch (error) {
-//     console.log(error);
-//     message.error('模板下载失败，请稍后重试');
-//   }
-// };
 
 const handleDownloadTemplate = async () => {
   try {
@@ -385,10 +356,6 @@ const handleDownloadTemplate = async () => {
     //   // body: JSON.stringify(params),
     // });
     const response: any = await patrolPointApi.importTemplate();
-
-    // if (!response.ok) {
-    //   throw new Error(`请求失败: ${response.status}`);
-    // }
 
     // 1. 获取二进制数据
     // const blob = await response.blob();
@@ -421,108 +388,6 @@ const handleDownloadTemplate = async () => {
     message.error('下载失败');
   }
 }
-
-  // const columns = [
-  //   {
-  //     title: '序号',
-  //     dataIndex: 'index',
-  //     key: 'index',
-  //     width: 80,
-  //     render: (_: any, __: any, index: number) => index + 1,
-  //   },
-  //   {
-  //     title: '点位编码',
-  //     dataIndex: 'pointCode',
-  //     key: 'pointCode',
-  //     width: 120,
-  //     render: (text: string, record: PatrolPoint) => {
-  //       return record.pointCode;
-  //     },
-  //   },
-  //   // {
-  //   //   title: '点位名称',
-  //   //   dataIndex: 'pointName',
-  //   //   key: 'pointName',
-  //   //   width: 150,
-  //   // },
-  //   {
-  //     title: '所属区域',
-  //     dataIndex: 'deptName',
-  //     key: 'deptName',
-  //     width: 150,
-  //   },
-  //   {
-  //     title: '楼层',
-  //     dataIndex: 'floor',
-  //     key: 'floor',
-  //     width: 80,
-  //   },
-  //   {
-  //     title: '房间号',
-  //     dataIndex: 'roomNumber',
-  //     key: 'roomNumber',
-  //     width: 100,
-  //   },
-  //   {
-  //     title: '详细名称',
-  //     dataIndex: 'detailName',
-  //     key: 'detailName',
-  //     width: 200,
-  //   },
-  //   {
-  //     title: '用途',
-  //     dataIndex: 'purpose',
-  //     key: 'purpose',
-  //     width: 120,
-  //   },
-  //   {
-  //     title: '创建时间',
-  //     dataIndex: 'createTime',
-  //     key: 'createTime',
-  //     width: 150,
-  //     render: (text: string | Date) => {
-  //       if (!text) return '-';
-  //       if (text instanceof Date) {
-  //         return text.toLocaleString();
-  //       }
-  //       return text;
-  //     },
-  //   },
-  //   {
-  //     title: '操作',
-  //     key: 'action',
-  //     width: 280,
-  //     fixed: 'right' as const,
-  //     render: (_: any, record: PatrolPoint) => (
-  //       <Space size={4}>
-  //         <Button
-  //           type="link"
-  //           icon={<EditOutlined />}
-  //           onClick={() => handleEdit(record)}
-  //         >
-  //           编辑
-  //         </Button>
-  //         <Button
-  //           type="link"
-  //           icon={<EyeOutlined />}
-  //           onClick={() => handlePreviewQR(record)}
-  //         >
-  //           预览标签
-  //         </Button>
-  //         <Popconfirm
-  //           title="确定要删除这个点位吗？"
-  //           onConfirm={() => handleDelete(record.pointId)}
-  //           okText="确定"
-  //           cancelText="取消"
-  //         >
-  //           <Button type="link" danger icon={<DeleteOutlined />}>
-  //             删除
-  //           </Button>
-  //         </Popconfirm>
-  //       </Space>
-  //     ),
-  //   },
-  // ];
 
   const columns = [
     {
@@ -583,8 +448,8 @@ const handleDownloadTemplate = async () => {
       key: 'guardId',
       width: 120,
       render: (guardId: number) => {
-        console.log("guardMap", guardMap);
-        console.log("loaded", guardMapLoaded);
+        // console.log("guardMap", guardMap);
+        // console.log("loaded", guardMapLoaded);
         return guardMap.get(guardId) || '暂无' // 使用 guardMap 显示安全员名称
       },
     },
@@ -877,115 +742,6 @@ const handleDownloadTemplate = async () => {
             </Space>
           </Form.Item>
         </Form>
-        {/* <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="name"
-                label="点位名称"
-                rules={[{ required: true, message: '请输入点位名称' }]}
-              >
-                <Input placeholder="请输入点位名称" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="code"
-                label="点位编码"
-                rules={editingPoint ? [] : []}
-              >
-                <Input
-                  placeholder={editingPoint ? "点位编码（后端自动生成）" : "点位编码（后端自动生成）"}
-                  disabled={!editingPoint}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="regionId"
-                label="所属学院/区域"
-                rules={[{ required: true, message: '请选择所属学院/区域' }]}
-              >
-                <Select
-                  placeholder="请选择学院/区域"
-                  options={options.regions}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="safetyOfficerId"
-                label="负责安全员"
-                rules={[{ required: true, message: '请选择负责安全员' }]}
-              >
-                <Select
-                  placeholder="请选择安全员"
-                  options={options.safetyOfficers}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="floor"
-                label="楼层"
-                rules={[{ required: true, message: '请输入楼层' }]}
-              >
-                <Input placeholder="请输入楼层（如：3楼）" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="roomNumber"
-                label="房间号"
-                rules={[{ required: true, message: '请输入房间号' }]}
-              >
-                <Input placeholder="请输入房间号" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="location"
-                label="详细名称"
-                rules={[{ required: true, message: '请输入详细名称' }]}
-              >
-                <Input placeholder="请输入详细位置名称" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="purpose"
-                label="用途"
-              >
-                <Input placeholder="请输入点位用途（可选）" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item name="description" label="描述">
-            <Input.TextArea
-              placeholder="请输入描述（可选）"
-              rows={3}
-            />
-          </Form.Item>
-          <Divider />
-          <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
-            <Space size="small">
-              <Button onClick={() => setModalVisible(false)}>取消</Button>
-              <Button type="primary" htmlType="submit">
-                {editingPoint ? '更新' : '新增'}
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form> */}
       </Modal>
 
       {/* 标签预览弹窗 */}

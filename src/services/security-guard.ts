@@ -1,6 +1,6 @@
 import { httpClient } from './httpClient';
 import { SecurityGuard, SecurityGuardForm, SecurityGuardQuery, ImportSecurityGuardParams } from '../types/security-guard';
-import { TableDataInfo } from '../types/common';
+import { ApiResponse, TableDataInfo } from '../types/common';
 import { PatrolPoint } from '../types/patrol-point';
 
 // 安全员管理API - 根据API文档
@@ -53,6 +53,12 @@ export const securityGuardApi = {
     return response;
   },
 
+  //导入点位数据
+  importData: async (file: File, params?: Record<string, any>): Promise<ApiResponse> => {
+    const response: any = await httpClient.upload('/campus/guard/importData', file, params);
+    return response;
+  },
+
   // 导出安全员信息列表 - POST /campus/guard/export
   exportSecurityGuards: async (params?: Omit<SecurityGuardQuery, keyof import('../types/common').BaseQuery>): Promise<Blob> => {
     const queryParams: Record<string, any> = {};
@@ -68,8 +74,8 @@ export const securityGuardApi = {
 
   // 导入安全员信息 - POST /campus/guard/importData
   importSecurityGuards: async (params: ImportSecurityGuardParams): Promise<any> => {
-    const response = await httpClient.upload<any>('/campus/guard/importData', params.file, { 
-      updateSupport: params.updateSupport 
+    const response = await httpClient.upload<any>('/campus/guard/importData', params.file, {
+      updateSupport: params.updateSupport
     });
     return response.data;
   },

@@ -233,16 +233,17 @@ const SafetyOfficerManagement: React.FC = () => {
   // 批量导入
   const handleImport = async (file: File) => {
     try {
-      const data = await readExcelFile(file);
-
-      // 这里应该验证数据格式并批量创建
-      console.log('导入的数据:', data);
-      message.success(`成功导入 ${data.length} 条记录`);
-      fetchOfficers();
+      const res = await securityGuardApi.importData(file, { updateSupport: true });
+      // const data = await readExcelFile(file);
+      // console.log('导入的数据:', data);
+      if (res.code === 0) {
+        message.success(`导入成功`);
+        fetchOfficers();
+      }
     } catch (error) {
       message.error('导入失败，请检查文件格式');
     }
-    return false; // 阻止自动上传
+    return false;
   };
 
   const handleDownloadTemplate = async () => {
@@ -253,19 +254,19 @@ const SafetyOfficerManagement: React.FC = () => {
       //   // body: JSON.stringify(params),
       // });
       const response: any = await securityGuardApi.importTemplate();
-  
+
       // if (!response.ok) {
       //   throw new Error(`请求失败: ${response.status}`);
       // }
-  
+
       // 1. 获取二进制数据
       // const blob = await response.blob();
       const blob = response;
-  
+
       // 2. 从 Content-Disposition 提取文件名（处理 URL 编码）
       // const contentDisposition = response.headers.get('Content-Disposition');
       let fileName = '安全员管理-导入模板.xlsx'; // 默认文件名
-  
+
       // if (contentDisposition) {
       //   // 匹配 filename= 或 filename*=utf-8'' 后的部分
       //   const match = contentDisposition.match(/filename[*=utf-8'']?["']?(.+?)["']?$/);
@@ -273,7 +274,7 @@ const SafetyOfficerManagement: React.FC = () => {
       //     fileName = decodeURIComponent(match[1]); // 解码中文文件名
       //   }
       // }
-  
+
       // 3. 触发浏览器下载
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -283,7 +284,7 @@ const SafetyOfficerManagement: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-  
+
     } catch (error) {
       console.error('下载失败:', error);
       message.error('下载失败');
