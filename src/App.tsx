@@ -113,6 +113,7 @@ const AppContent: React.FC = () => {
       localStorage.removeItem('user');
       message.success('退出登录成功');
       navigate('/login');
+      // window.location.href = "/login";
     } catch (error) {
       message.error('退出登录失败');
     }
@@ -124,7 +125,7 @@ const AppContent: React.FC = () => {
       {
         key: '/regions',
         icon: <EnvironmentOutlined />,
-        label: '区域管理',
+        label: '部门管理',
       },
       {
         key: '/points',

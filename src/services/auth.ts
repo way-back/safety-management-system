@@ -26,7 +26,7 @@ export const authApi = {
         createTime: new Date().toISOString(),
         updateTime: new Date().toISOString()
       },
-      token: 'mock_token_' + Date.now()
+      token: 'mock_token_'
     };
   },
 

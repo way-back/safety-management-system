@@ -124,7 +124,7 @@ const PointManagement: React.FC = () => {
     }
   };
 
-  // 获取区域列表
+  // 获取部门列表
   // const fetchDepartments = async () => {
   //   try {
   //     const response = await departmentApi.getDepartments({});
@@ -133,14 +133,14 @@ const PointManagement: React.FC = () => {
   //       value: dept.deptId,
   //     })) || []);
   //   } catch (error) {
-  //     console.error('获取区域列表失败:', error);
+  //     console.error('获取部门列表失败:', error);
   //   }
   // };
 
-  // 获取区域列表（用于表格分页显示）
+  // 获取部门列表（用于表格分页显示）
   const fetchDepartments = async () => {
     try {
-      // 注意：由于API文档中没有分页的区域列表接口，这里使用树形接口
+      // 注意：由于API文档中没有分页的部门列表接口，这里使用树形接口
       const response = await departmentApi.getDepartmentTree();
       setDepartments(response.data || []);
       // setDepartments(response.data?.map(dept => ({
@@ -148,7 +148,7 @@ const PointManagement: React.FC = () => {
       //   value: dept.deptId!,
       // })) || []);
     } catch (error) {
-      message.error('获取区域列表失败');
+      message.error('获取部门列表失败');
     }
   };
 
@@ -316,7 +316,7 @@ const PointManagement: React.FC = () => {
         学院: point.college || '',
         楼栋: point.building || '',
         楼层: point.floor || '',
-        所属区域: point.regionName || '',
+        所属部门: point.regionName || '',
         房间号: point.roomNumber || '',
         详细名称: point.location || '',
         用途: point.purpose || '',
@@ -327,7 +327,7 @@ const PointManagement: React.FC = () => {
     });
 
     exportToExcel(exportData, '点位信息', [
-      '点位编码', '学院', '楼栋', '楼层', '所属区域', '房间号', '详细名称', '用途', '负责安全员', '描述', '创建时间'
+      '点位编码', '学院', '楼栋', '楼层', '所属部门', '房间号', '详细名称', '用途', '负责安全员', '描述', '创建时间'
     ]);
     message.success('导出成功');
   };
@@ -407,7 +407,7 @@ const handleDownloadTemplate = async () => {
       },
     },
     {
-      title: '所属区域',
+      title: '所属部门',
       dataIndex: 'deptName',
       key: 'deptName',
       width: 150,
@@ -524,9 +524,9 @@ const handleDownloadTemplate = async () => {
           <Form.Item name="pointCode" label="点位编码">
             <Input placeholder="请输入点位编码" allowClear />
           </Form.Item>
-          <Form.Item name="deptId" label="所属区域">
+          <Form.Item name="deptId" label="所属部门">
             <Select
-              placeholder="请选择区域"
+              placeholder="请选择部门"
               allowClear
               style={{ width: 180 }}
               // options={departments}
@@ -634,11 +634,11 @@ const handleDownloadTemplate = async () => {
             <Col span={12}>
               <Form.Item
                 name="deptId"
-                label="所属区域"
-                rules={[{ required: true, message: '请选择所属区域' }]}
+                label="所属部门"
+                rules={[{ required: true, message: '请选择所属部门' }]}
               >
                 <Select
-                  placeholder="请选择区域"
+                  placeholder="请选择部门"
                   allowClear
                   // showSearch
                   // options={departments}
@@ -648,9 +648,9 @@ const handleDownloadTemplate = async () => {
                   }))}
                 />
               </Form.Item>
-              {/* <Form.Item name="deptId" label="所属区域">
+              {/* <Form.Item name="deptId" label="所属部门">
                 <Select
-                  placeholder="请选择区域"
+                  placeholder="请选择部门"
                   allowClear
                   style={{ width: 180 }}
                   // options={departments}

@@ -107,10 +107,10 @@ const SafetyOfficerManagement: React.FC = () => {
     }
   };
 
-  // 获取区域列表（用于表格分页显示）
+  // 获取部门列表（用于表格分页显示）
   const fetchDepartments = async () => {
     try {
-      // 注意：由于API文档中没有分页的区域列表接口，这里使用树形接口
+      // 注意：由于API文档中没有分页的部门列表接口，这里使用树形接口
       const response = await departmentApi.getDepartmentTree();
       setDepartments(response.data || []);
       // setDepartments(response.data?.map(dept => ({
@@ -118,7 +118,7 @@ const SafetyOfficerManagement: React.FC = () => {
       //   value: dept.deptId!,
       // })) || []);
     } catch (error) {
-      message.error('获取区域列表失败');
+      message.error('获取部门列表失败');
     }
   };
 
@@ -305,7 +305,7 @@ const SafetyOfficerManagement: React.FC = () => {
       key: 'name',
     },
     {
-      title: '区域',
+      title: '部门',
       dataIndex: 'deptName',
       key: 'deptName',
       render: (text: string) => text || '-',
@@ -347,7 +347,7 @@ const SafetyOfficerManagement: React.FC = () => {
             }))}
           />
           // <Select
-          //   placeholder="请选择区域"
+          //   placeholder="请选择部门"
           //   allowClear
           //   style={{ width: 180 }}
           //   // options={departments}
@@ -506,18 +506,18 @@ const SafetyOfficerManagement: React.FC = () => {
             <Col span={12}>
               {/* <Form.Item
                 name="dept"
-                label="区域"
-                rules={[{ required: true, message: '请输入区域' }]}
+                label="部门"
+                rules={[{ required: true, message: '请输入部门' }]}
               >
-                <Input placeholder="请输入区域" />
+                <Input placeholder="请输入部门" />
               </Form.Item> */}
               <Form.Item
                 name="deptId"
-                label="区域"
-                rules={[{ required: true, message: '请选择区域' }]}
+                label="部门"
+                rules={[{ required: true, message: '请选择部门' }]}
               >
                 <Select
-                  placeholder="请选择区域"
+                  placeholder="请选择部门"
                   allowClear
                   // showSearch
                   filterOption={(input, option) =>
