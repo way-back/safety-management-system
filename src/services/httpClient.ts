@@ -1,4 +1,6 @@
+import { useNavigate } from 'react-router-dom';
 import { ApiResponse } from '../types/common';
+import { message } from 'antd';
 
 class HttpClient {
   private baseURL: string;
@@ -41,6 +43,7 @@ class HttpClient {
         headers: Object.fromEntries(response.headers.entries()),
         url: response.url
       });
+      // console.log("response", response);
 
       if (!response.ok) {
         // 处理HTTP错误状态
@@ -56,8 +59,25 @@ class HttpClient {
         throw new Error(errorData.message || `请求失败: ${response.status} ${response.statusText}`);
       }
 
+      if(response.status === 500) {
+        message.error('服务器内部错误');
+        throw new Error('500, 服务器内部错误');
+      }
+
+      if (response.status === 401) {
+        // 未授权，清除本地token并跳转登录
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        throw new Error('登录已过期，请重新登录');
+      }
+
       const result = await response.json();
 
+      if(result.code !== 0) {
+        message.error(result.msg);
+        throw new Error(result.msg);
+      }
       console.log(`[HTTP] Response:`, result);
 
       // 直接返回结果，不检查业务状态码

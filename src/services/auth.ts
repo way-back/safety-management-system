@@ -26,13 +26,13 @@ export const authApi = {
         createTime: new Date().toISOString(),
         updateTime: new Date().toISOString()
       },
-      token: 'mock_token_' + Date.now()
+      token: 'mock_token_'
     };
   },
 
   logout: async (): Promise<void> => {
     // API文档中没有明确的登出接口，保留基本实现
-    await httpClient.post('/logout');
+    await httpClient.get('/logout');
   },
 
   getCurrentUser: async (): Promise<User> => {
