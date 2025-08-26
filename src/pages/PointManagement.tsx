@@ -49,10 +49,16 @@ const PointManagement: React.FC = () => {
   const [searchForm] = Form.useForm();
   const [options, setOptions] = useState({});
 
-  const [guardMapLoaded, setGuardMapLoaded] = useState(false);
-  const [guardMap, setGuardMap] = useState<Map<number, string>>(new Map());
-
   const [securityGuards, setSecurityGuards] = useState<SecurityGuard[]>([]);
+
+  // 添加错误弹窗状态
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // 添加安全员信息弹窗状态
+  const [guardModalVisible, setGuardModalVisible] = useState(false);
+  const [selectedGuard, setSelectedGuard] = useState<SecurityGuard | null>(null);
+  const [guardLoading, setGuardLoading] = useState(false);
 
   // 获取安全员列表
   const fetchSecurityGuards = async () => {
@@ -81,46 +87,22 @@ const PointManagement: React.FC = () => {
         total: response.total || 0,
       }));
 
-      // 创建新的 Map 实例
-      const newGuardMap = new Map<number, string>();
-
-      // 设置 guardMap
-      for (let i = 0; i < response.data.length; i++) {
-        const guardId = response.data[i].guardId;
-        if (!guardId) continue;
-        const res = await securityGuardApi.getSecurityGuardById(guardId);
-        if (res && res.name) {
-          newGuardMap.set(guardId, res.name);
-        }
-      }
-
-      // 更新 guardMap 状态
-      setGuardMap(newGuardMap);
-      setGuardMapLoaded(true); // 确保 guardMap 数据加载完成后更新状态
-
-      // console.log("points", response.data);
-      // 清空 guardMap
-      // guardMap.clear();
+      // 移除自动查询安全员信息的逻辑，改为点击按钮时查询
+      // const newGuardMap = new Map<number, string>();
       // for (let i = 0; i < response.data.length; i++) {
-      //   if (!response.data[i].guardId) continue;
-      //   const res = await securityGuardApi.getSecurityGuardById(response.data[i].guardId!);
-      //   guardMap.set(response.data[i].guardId!, res.name!);
-      //   console.log("map", guardMap);
-      //   console.log("loaded", guardMapLoaded);
-      //   // console.log("guard", res);
-
-      //   console.log("after loaded", guardMapLoaded);
+      //   const guardId = response.data[i].guardId;
+      //   if (!guardId) continue;
+      //   const res = await securityGuardApi.getSecurityGuardById(guardId);
+      //   if (res && res.name) {
+      //     newGuardMap.set(guardId, res.name);
+      //   }
       // }
-      // // 标记 guardMap 加载完成
+      // setGuardMap(newGuardMap);
       // setGuardMapLoaded(true);
-      // console.log(guardMap.get(1));
-      // const res = await securityGuardApi.getSecurityGuardById(1);
-      // console.log("guard", res);
     } catch (error) {
       message.error('获取点位列表失败');
     } finally {
       setLoading(false);
-
     }
   };
 
@@ -338,56 +320,84 @@ const PointManagement: React.FC = () => {
       const res = await patrolPointApi.importData(file, { updateSupport: true });
       // const data = await readExcelFile(file);
       // console.log('导入的数据:', data);
-      if(res.code === 0) {
+      if (res.code === 0) {
         message.success(`导入成功`);
         fetchPoints();
+      } else {
+        // 处理业务错误
+        setErrorMessage(res.msg || '导入失败');
+        setErrorModalVisible(true);
       }
-    } catch (error) {
-      message.error('导入失败，请检查文件格式');
+    } catch (error: any) {
+      // 处理网络错误或其他异常
+      const errorMsg = error.message || '导入失败，请检查文件格式';
+      setErrorMessage(errorMsg);
+      setErrorModalVisible(true);
     }
     return false;
   };
 
-const handleDownloadTemplate = async () => {
-  try {
-    // const response = await fetch('/api//campus/point/importTemplate', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   // body: JSON.stringify(params),
-    // });
-    const response: any = await patrolPointApi.importTemplate();
+  const handleDownloadTemplate = async () => {
+    try {
+      // const response = await fetch('/api//campus/point/importTemplate', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   // body: JSON.stringify(params),
+      // });
+      const response: any = await patrolPointApi.importTemplate();
 
-    // 1. 获取二进制数据
-    // const blob = await response.blob();
-    const blob = response;
+      // 1. 获取二进制数据
+      // const blob = await response.blob();
+      const blob = response;
 
-    // 2. 从 Content-Disposition 提取文件名（处理 URL 编码）
-    // const contentDisposition = response.headers.get('Content-Disposition');
-    let fileName = '点位管理-导入模板.xlsx'; // 默认文件名
+      // 2. 从 Content-Disposition 提取文件名（处理 URL 编码）
+      // const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = '点位管理-导入模板.xlsx'; // 默认文件名
 
-    // if (contentDisposition) {
-    //   // 匹配 filename= 或 filename*=utf-8'' 后的部分
-    //   const match = contentDisposition.match(/filename[*=utf-8'']?["']?(.+?)["']?$/);
-    //   if (match && match[1]) {
-    //     fileName = decodeURIComponent(match[1]); // 解码中文文件名
-    //   }
-    // }
+      // if (contentDisposition) {
+      //   // 匹配 filename= 或 filename*=utf-8'' 后的部分
+      //   const match = contentDisposition.match(/filename[*=utf-8'']?["']?(.+?)["']?$/);
+      //   if (match && match[1]) {
+      //     fileName = decodeURIComponent(match[1]); // 解码中文文件名
+      //   }
+      // }
 
-    // 3. 触发浏览器下载
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName; // 使用解码后的文件名
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+      // 3. 触发浏览器下载
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName; // 使用解码后的文件名
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
 
-  } catch (error) {
-    console.error('下载失败:', error);
-    message.error('下载失败');
+    } catch (error) {
+      console.error('下载失败:', error);
+      message.error('下载失败');
+    }
   }
-}
+
+  // 查看安全员信息
+  const handleViewGuard = async (record: PatrolPoint) => {
+    if (!record.guardId) {
+      message.warning('该点位暂未分配安全员');
+      return;
+    }
+
+    setGuardLoading(true);
+    setGuardModalVisible(true);
+
+    try {
+      const res = await securityGuardApi.getSecurityGuardById(record.guardId);
+      setSelectedGuard(res);
+    } catch (error) {
+      message.error('获取安全员信息失败');
+      setSelectedGuard(null);
+    } finally {
+      setGuardLoading(false);
+    }
+  };
 
   const columns = [
     {
@@ -443,14 +453,22 @@ const handleDownloadTemplate = async () => {
       width: 120,
     },
     {
-      title: '安全员', // 新增安全员列
+      title: '安全员',
       dataIndex: 'guardId',
       key: 'guardId',
       width: 120,
-      render: (guardId: number) => {
-        // console.log("guardMap", guardMap);
-        // console.log("loaded", guardMapLoaded);
-        return guardMap.get(guardId) || '暂无' // 使用 guardMap 显示安全员名称
+      render: (guardId: number, record: PatrolPoint) => {
+        if (!guardId) return '暂无';
+        return (
+          <Button
+            type="link"
+            size="small"
+            onClick={() => handleViewGuard(record)}
+            loading={guardLoading}
+          >
+            查看安全员
+          </Button>
+        );
       },
     },
     {
@@ -834,6 +852,177 @@ const handleDownloadTemplate = async () => {
               <p style={{ fontSize: '12px', color: '#666', margin: '8px 0 0 0' }}>
                 💡 点击上方链接可预览扫码后的H5页面效果，或扫描标签上的二维码查看点位详细信息
               </p>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* 错误弹窗 */}
+      <Modal
+        title="导入失败"
+        open={errorModalVisible}
+        onCancel={() => setErrorModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setErrorModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        width={600}
+      >
+        <div style={{
+          background: '#fff2f0',
+          border: '1px solid #ffccc7',
+          borderRadius: '6px',
+          padding: '16px',
+          marginBottom: '16px'
+        }}>
+          <div style={{
+            color: '#cf1322',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            marginBottom: '8px'
+          }}>
+            ❌ 导入过程中发生错误
+          </div>
+          <div
+            style={{
+              color: '#434343',
+              fontSize: '14px',
+              lineHeight: '1.6'
+            }}
+            dangerouslySetInnerHTML={{ __html: errorMessage }}
+          />
+        </div>
+        <div style={{
+          background: '#f6ffed',
+          border: '1px solid #b7eb8f',
+          borderRadius: '6px',
+          padding: '12px',
+          fontSize: '13px',
+          color: '#52c41a'
+        }}>
+          💡 请检查以下内容：
+          <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
+            <li>确保Excel文件格式正确</li>
+            <li>检查必填字段是否完整</li>
+            <li>验证数据格式是否符合要求</li>
+            <li>确认关联的部门信息是否存在</li>
+          </ul>
+        </div>
+      </Modal>
+
+      {/* 安全员信息弹窗 */}
+      <Modal
+        title={`安全员信息 - ${selectedGuard?.name || ''}`}
+        open={guardModalVisible}
+        onCancel={() => setGuardModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setGuardModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        destroyOnClose
+        width={600}
+        confirmLoading={guardLoading}
+      >
+        {selectedGuard && (
+          <div>
+            {/* 基本信息卡片 */}
+            <Card
+              title="基本信息"
+              size="small"
+              style={{ marginBottom: 16 }}
+              headStyle={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #e8e8e8' }}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontWeight: 'bold', color: '#333', marginRight: 8 }}>姓名：</span>
+                    <span style={{ color: '#1890ff', fontSize: '16px' }}>{selectedGuard.name}</span>
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontWeight: 'bold', color: '#333', marginRight: 8 }}>安全员ID：</span>
+                    <span style={{ color: '#666' }}>{selectedGuard.guardId}</span>
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontWeight: 'bold', color: '#333', marginRight: 8 }}>所属区域：</span>
+                    <span style={{ color: '#666' }}>{selectedGuard.deptName || '暂无'}</span>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontWeight: 'bold', color: '#333', marginRight: 8 }}>手机号码：</span>
+                    <span style={{ color: '#666' }}>{selectedGuard.phoneNumber || '暂无'}</span>
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontWeight: 'bold', color: '#333', marginRight: 8 }}>办公室电话：</span>
+                    <span style={{ color: '#666' }}>{selectedGuard.officePhone || '暂无'}</span>
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <span style={{ fontWeight: 'bold', color: '#333', marginRight: 8 }}>微信号：</span>
+                    <span style={{ color: '#666' }}>{selectedGuard.wechatId || '暂无'}</span>
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* 备注信息卡片 */}
+            {selectedGuard.remark && (
+              <Card
+                title="备注信息"
+                size="small"
+                style={{ marginBottom: 16 }}
+                headStyle={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #e8e8e8' }}
+              >
+                <div style={{
+                  padding: '12px',
+                  backgroundColor: '#f6ffed',
+                  border: '1px solid #b7eb8f',
+                  borderRadius: '6px',
+                  color: '#52c41a'
+                }}>
+                  {selectedGuard.remark}
+                </div>
+              </Card>
+            )}
+
+            {/* 时间信息卡片 */}
+            <Card
+              title="时间信息"
+              size="small"
+              headStyle={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #e8e8e8' }}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <div style={{ marginBottom: 8 }}>
+                    <span style={{ fontWeight: 'bold', color: '#333', marginRight: 8 }}>创建时间：</span>
+                    <span style={{ color: '#666', fontSize: '13px' }}>
+                      {selectedGuard.createTime ? new Date(selectedGuard.createTime).toLocaleString() : '-'}
+                    </span>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ marginBottom: 8 }}>
+                    <span style={{ fontWeight: 'bold', color: '#333', marginRight: 8 }}>更新时间：</span>
+                    <span style={{ color: '#666', fontSize: '13px' }}>
+                      {selectedGuard.updateTime ? new Date(selectedGuard.updateTime).toLocaleString() : '-'}
+                    </span>
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* 联系信息提示 */}
+            <div style={{
+              background: '#e6f7ff',
+              border: '1px solid #91d5ff',
+              borderRadius: '6px',
+              padding: '12px',
+              marginTop: '16px',
+              fontSize: '13px',
+              color: '#1890ff'
+            }}>
+              💡 如需联系该安全员，请使用上述联系方式。如有紧急情况，建议优先使用手机号码联系。
             </div>
           </div>
         )}
