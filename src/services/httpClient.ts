@@ -64,6 +64,14 @@ class HttpClient {
         throw new Error('500, 服务器内部错误');
       }
 
+      if (response.status === 401) {
+        // 未授权，清除本地token并跳转登录
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        throw new Error('登录已过期，请重新登录');
+      }
+
       const result = await response.json();
 
       if(result.code !== 0) {

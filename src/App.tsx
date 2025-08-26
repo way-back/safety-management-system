@@ -108,7 +108,7 @@ const AppContent: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      // await authApi.logout();
+      await authApi.logout();
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       message.success('退出登录成功');

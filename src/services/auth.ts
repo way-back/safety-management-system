@@ -32,7 +32,7 @@ export const authApi = {
 
   logout: async (): Promise<void> => {
     // API文档中没有明确的登出接口，保留基本实现
-    await httpClient.post('/logout');
+    await httpClient.get('/logout');
   },
 
   getCurrentUser: async (): Promise<User> => {
