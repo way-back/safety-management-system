@@ -14,28 +14,36 @@ import { securityGuardApi } from '../services/security-guard';
 import './PointDetailH5.css';
 
 const PointDetailH5: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { uniquecode } = useParams<{ uniquecode: string }>();
   const [point, setPoint] = useState<Point | null>(null);
   const [officer, setOfficer] = useState<SafetyOfficer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!id) return;
+      if (!uniquecode) return;
 
       try {
         setLoading(true);
-        // const pointsResponse = await pointApi.getPoints();
-        // const currentPoint = pointsResponse.data.find(p => p.id === id);
-        const currentPoint = await patrolPointApi.getPatrolPointById(Number(id));
+        // 通过 pointUniqueCode 查询点位信息
+        const currentPoint = await patrolPointApi.getPatrolPointByCode(uniquecode);
         console.log("point", currentPoint);
         if (currentPoint) {
           setPoint(currentPoint);
-          // const officersResponse = await safetyOfficerApi.getSafetyOfficers();
-          // const currentOfficer = officersResponse.data.find(o => o.id === currentPoint.safetyOfficerId);
-          const currentOfficer = await securityGuardApi.getSecurityGuardById(currentPoint.guardId!);
-          console.log("officer", currentOfficer);
-          setOfficer(currentOfficer || null);
+
+          // 如果有安全员ID，则获取安全员信息
+          if (currentPoint.guardId) {
+            try {
+              const currentOfficer = await securityGuardApi.getSecurityGuardById(currentPoint.guardId);
+              console.log("officer", currentOfficer);
+              setOfficer(currentOfficer || null);
+            } catch (error) {
+              console.error('获取安全员信息失败:', error);
+              setOfficer(null);
+            }
+          } else {
+            setOfficer(null);
+          }
         }
       } catch (error) {
         message.error('获取信息失败');
@@ -45,7 +53,7 @@ const PointDetailH5: React.FC = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [uniquecode]);
 
   const copyToClipboard = (text: string, label: string) => {
     if (navigator.clipboard) {
@@ -79,10 +87,18 @@ const PointDetailH5: React.FC = () => {
     );
   }
 
-  if (!point || !officer) {
+  if (!point) {
     return (
       <div className="h5-error">
-        <p>未找到相关信息</p>
+        <p>未找到点位信息</p>
+      </div>
+    );
+  }
+
+  if (!officer) {
+    return (
+      <div className="h5-error">
+        <p>该点位暂未分配安全员</p>
       </div>
     );
   }
@@ -168,12 +184,12 @@ const PointDetailH5: React.FC = () => {
 
               <div className="officer-info">
                 {/* 姓名 */}
-                <div className="contact-item">
+                {/* <div className="contact-item">
                   <div className="contact-info">
                     <UserOutlined className="contact-icon" />
                     <span>姓名：{officer.name}</span>
                   </div>
-                </div>
+                </div> */}
 
                 {/* 部门 */}
                 <div className="contact-item">

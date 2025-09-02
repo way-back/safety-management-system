@@ -61,7 +61,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: UserR
 
   // 如果需要特定权限且用户权限不足
   if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to="/regions" replace />;
+    return <Navigate to="/admin/regions" replace />;
   }
 
   return <>{children}</>;
@@ -123,17 +123,17 @@ const AppContent: React.FC = () => {
   const getMenuItems = () => {
     const baseItems = [
       {
-        key: '/regions',
+        key: '/admin/regions',
         icon: <EnvironmentOutlined />,
         label: '部门管理',
       },
       {
-        key: '/points',
+        key: '/admin/points',
         icon: <SettingOutlined />,
         label: '点位管理',
       },
       {
-        key: '/officers',
+        key: '/admin/officers',
         icon: <TeamOutlined />,
         label: '安全员管理',
       },
@@ -142,7 +142,7 @@ const AppContent: React.FC = () => {
     // 如果是超级管理员，添加用户管理菜单
     if (user?.role === UserRole.SUPER_ADMIN) {
       baseItems.push({
-        key: '/users',
+        key: '/admin/users',
         icon: <UserOutlined />,
         label: '用户管理',
       });
@@ -151,7 +151,7 @@ const AppContent: React.FC = () => {
     // 在开发环境下添加调试工具菜单
     if (import.meta.env.DEV || import.meta.env.VITE_SHOW_DEBUG === 'true') {
       baseItems.push({
-        key: '/debug',
+        key: '/admin/debug',
         icon: <BugOutlined />,
         label: 'API调试',
       });
@@ -235,21 +235,21 @@ const AppContent: React.FC = () => {
             minHeight: 'calc(100vh - 112px)',
           }}>
             <Routes>
-              <Route path="/" element={<Navigate to="/regions" replace />} />
-              <Route path="/regions" element={<RegionManagement />} />
-              <Route path="/points" element={<PointManagement />} />
-              <Route path="/officers" element={<SafetyOfficerManagement />} />
+              <Route path="/" element={<Navigate to="regions" replace />} />
+              <Route path="regions" element={<RegionManagement />} />
+              <Route path="points" element={<PointManagement />} />
+              <Route path="officers" element={<SafetyOfficerManagement />} />
               <Route
-                path="/users"
-                // element={
-                //   user?.role === UserRole.SUPER_ADMIN ?
-                //     <UserManagement /> :
-                //     <Navigate to="/regions" replace />
-                // }
+                path="users"
+              // element={
+              //   user?.role === UserRole.SUPER_ADMIN ?
+              //     <UserManagement /> :
+              //     <Navigate to="regions" replace />
+              // }
               />
               {/* 调试工具路由 - 仅在开发环境下可用 */}
               {(import.meta.env.DEV || import.meta.env.VITE_SHOW_DEBUG === 'true') && (
-                <Route path="/debug" element={<ApiDebugger />} />
+                <Route path="debug" element={<ApiDebugger />} />
               )}
             </Routes>
           </div>
@@ -263,19 +263,21 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
+        {/* 根路径重定向 */}
+        <Route path="/" element={<Navigate to="/admin" replace />} />
         {/* 登录页面 */}
         <Route path="/login" element={<Login />} />
-        {/* H5页面路由，独立布局 */}
-        <Route path="/h5/point/:id" element={<PointDetailH5 />} />
         {/* 管理端页面路由，使用AppContent布局和权限保护 */}
         <Route
-          path="/*"
+          path="/admin/*"
           element={
             <ProtectedRoute>
               <AppContent />
             </ProtectedRoute>
           }
         />
+        {/* H5页面路由，独立布局 */}
+        <Route path="/:uniquecode" element={<PointDetailH5 />} />
       </Routes>
     </Router>
   );

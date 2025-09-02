@@ -11,17 +11,17 @@ export const patrolPointApi = {
     data: PatrolPoint[]
   }> => {
     const response = await httpClient.get<PatrolPoint>(`/campus/point/list`, params);
-    return { total: response.total!, data: response.rows as PatrolPoint[] };
+    return { total: response.total!, data: response.rows as unknown as PatrolPoint[] };
   },
 
   createPatrolPoint: async (params: PatrolPointForm): Promise<void> => {
     const response = await httpClient.post(`/campus/point`, params);
-    
+
   },
 
   updatePatrolPoint: async (pointId: number, params: PatrolPointForm): Promise<void> => {
     const response = await httpClient.put(`/campus/point`, { ...params, pointId });
-    
+
   },
 
   deletePatrolPoints: async (pointIds: string): Promise<void> => {
@@ -65,6 +65,12 @@ export const patrolPointApi = {
   // 根据二维码code查询点位信息 - GET /campus/point/getByQrCode
   getPatrolPointByQrCode: async (qrCode: string): Promise<PatrolPoint> => {
     const response = await httpClient.get<PatrolPoint>('/campus/point/getByQrCode', { qrCode });
+    return response.data!;
+  },
+
+  // 根据点位唯一编码查询点位信息 - GET /campus/point/unique/{pointUniqueCode}
+  getPatrolPointByCode: async (pointUniqueCode: string): Promise<PatrolPoint> => {
+    const response = await httpClient.get<PatrolPoint>(`/campus/point/unique/${pointUniqueCode}`);
     return response.data!;
   },
 

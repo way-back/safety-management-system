@@ -16,10 +16,11 @@ export interface PatrolPoint extends BaseEntity {
     guardPhone?: string;
     params?: { [key: string]: any };
     pointCode?: string;
+    pointUniqueCode?: string;
     pointId?: number;
     purpose?: string;
     qrCode?: string;
-    qrCodeBase64?: string;
+    qrCodeBase64: string;
     remark?: string;
     roomNumber?: string;
     updateBy?: string;

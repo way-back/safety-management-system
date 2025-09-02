@@ -29,7 +29,7 @@ import {
 import { Department, PatrolPoint, PatrolPointForm, PatrolPointPageQuery, PatrolPointQuery, SecurityGuard } from '../types';
 import { departmentApi } from '../services/department';
 import { patrolPointApi } from '../services/patrol-point';
-import { generateQRCode, generateLabelImage, downloadQRCode, downloadLabelImage } from '../utils/qrcode';
+import { generateQRCode, generateLabelImage, generateLabelImageFromBase64, downloadQRCode, downloadLabelImage } from '../utils/qrcode';
 import { exportToExcel, readExcelFile } from '../utils/export';
 import { securityGuardApi } from '../services/security-guard';
 
@@ -243,10 +243,18 @@ const PointManagement: React.FC = () => {
     try {
       setSelectedPoint(record);
 
-      // 生成H5页面链接（这里使用模拟链接）
-      const h5Url = `${window.location.origin}/h5/point/${record.id}`;
-      const labelImage = await generateLabelImage(h5Url);
-      setQrCodeUrl(labelImage);
+      // 优先使用后端返回的二维码生成标签，如果没有则在前端生成
+      if (record.qrCodeBase64) {
+        // 使用后端返回的二维码生成带文字的标签
+        const labelImage = await generateLabelImageFromBase64(record.qrCodeBase64);
+        setQrCodeUrl(labelImage);
+      } else {
+        // 前端生成二维码作为备选方案
+        const h5Url = `${window.location.origin}/${record.pointUniqueCode}`;
+        const labelImage = await generateLabelImage(h5Url);
+        setQrCodeUrl(labelImage);
+      }
+
       setQrModalVisible(true);
     } catch (error) {
       message.error('生成标签图片失败');
@@ -273,10 +281,13 @@ const PointManagement: React.FC = () => {
     setLoading(true);
     try {
       for (const point of points) {
-        const h5Url = `${window.location.origin}/h5/point/${point.id}`;
-        const labelImage = await generateLabelImage(h5Url);
+        let labelImage: string;
+
+        // 使用后端返回的二维码生成标签
+        labelImage = await generateLabelImageFromBase64(point.qrCodeBase64);
+
         const name = point.pointName || point.name || '点位';
-        downloadLabelImage(labelImage, `${name}_安全员信息码`);
+        // downloadLabelImage(labelImage, `${name}_安全员信息码`);
         // 添加小延迟避免浏览器阻止多个下载
         await new Promise(resolve => setTimeout(resolve, 500));
       }
@@ -841,12 +852,12 @@ const PointManagement: React.FC = () => {
                 margin: '8px 0'
               }}>
                 <a
-                  href={`${window.location.origin}/h5/point/${selectedPoint.pointId}`}
+                  href={`${window.location.origin}/${selectedPoint.pointUniqueCode}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: '#1890ff', textDecoration: 'none' }}
                 >
-                  {`${window.location.origin}/h5/point/${selectedPoint.pointId}`}
+                  {`${window.location.origin}/${selectedPoint.pointUniqueCode}`}
                 </a>
               </p>
               <p style={{ fontSize: '12px', color: '#666', margin: '8px 0 0 0' }}>
