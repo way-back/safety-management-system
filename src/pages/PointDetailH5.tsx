@@ -7,16 +7,13 @@ import {
   MobileOutlined,
   CopyOutlined
 } from '@ant-design/icons';
-import { Point, SafetyOfficer } from '../types';
-// import { pointApi, safetyOfficerApi } from '../services/api';
+import { Point } from '../types';
 import { patrolPointApi } from '../services/patrol-point';
-import { securityGuardApi } from '../services/security-guard';
 import './PointDetailH5.css';
 
 const PointDetailH5: React.FC = () => {
   const { uniquecode } = useParams<{ uniquecode: string }>();
   const [point, setPoint] = useState<Point | null>(null);
-  const [officer, setOfficer] = useState<SafetyOfficer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,23 +24,8 @@ const PointDetailH5: React.FC = () => {
         setLoading(true);
         // 通过 pointUniqueCode 查询点位信息
         const currentPoint = await patrolPointApi.getPatrolPointByCode(uniquecode);
-        console.log("point", currentPoint);
         if (currentPoint) {
           setPoint(currentPoint);
-
-          // 如果有安全员ID，则获取安全员信息
-          if (currentPoint.guardId) {
-            try {
-              const currentOfficer = await securityGuardApi.getSecurityGuardById(currentPoint.guardId);
-              console.log("officer", currentOfficer);
-              setOfficer(currentOfficer || null);
-            } catch (error) {
-              console.error('获取安全员信息失败:', error);
-              setOfficer(null);
-            }
-          } else {
-            setOfficer(null);
-          }
         }
       } catch (error) {
         message.error('获取信息失败');
@@ -95,7 +77,7 @@ const PointDetailH5: React.FC = () => {
     );
   }
 
-  if (!officer) {
+  if (!point.guardName) {
     return (
       <div className="h5-error">
         <p>该点位暂未分配安全员</p>
@@ -159,134 +141,39 @@ const PointDetailH5: React.FC = () => {
           <div className="officer-info">
             <div className="officer-name">
               <UserOutlined className="name-icon" />
-              <span>{officer.name}</span>
+              <span>{point.guardName}</span>
             </div>
 
             <div className="contact-list">
-              {/* 手机号码 - 支持新旧字段 */}
-              {/* {(officer.phoneNumber || officer.mobile) && (
-                <div className="contact-item">
-                  <div className="contact-info">
-                    <MobileOutlined className="contact-icon" />
-                    <span>{officer.phoneNumber || officer.mobile}</span>
-                  </div>
-                  <Button
-                    type="text"
-                    icon={<CopyOutlined />}
-                    onClick={() => {
-                      const phone = officer.phoneNumber || officer.mobile;
-                      phone && copyToClipboard(phone, '手机号码');
-                    }}
-                    className="copy-btn"
-                  />
-                </div>
-              )} */}
-
               <div className="officer-info">
-                {/* 姓名 */}
-                {/* <div className="contact-item">
-                  <div className="contact-info">
-                    <UserOutlined className="contact-icon" />
-                    <span>姓名：{officer.name}</span>
-                  </div>
-                </div> */}
-
                 {/* 部门 */}
                 <div className="contact-item">
                   <div className="contact-info">
                     <span className="contact-icon">🏢</span>
-                    <span>部门：{officer.deptName || officer.department}</span>
+                    <span>部门：{point.guardDept}</span>
                   </div>
                 </div>
-
-                {/* 办公室电话 */}
-                {officer.officePhone && (
-                  <div className="contact-item">
-                    <div className="contact-info">
-                      <MobileOutlined className="contact-icon" />
-                      <span>办公室电话：{officer.officePhone}</span>
-                    </div>
-                    <Button
-                      type="text"
-                      icon={<CopyOutlined />}
-                      onClick={() => {
-                        copyToClipboard(officer.officePhone!, '办公室电话');
-                      }}
-                      className="copy-btn"
-                    />
-                  </div>
-                )}
 
                 {/* 手机号码 */}
-                {(officer.phoneNumber || officer.mobile) && (
+                {point.guardPhone && (
                   <div className="contact-item">
                     <div className="contact-info">
                       <MobileOutlined className="contact-icon" />
-                      <span>手机号码：{officer.phoneNumber || officer.mobile}</span>
+                      <span>手机号码：{point.guardPhone}</span>
                     </div>
                     <Button
                       type="text"
                       icon={<CopyOutlined />}
                       onClick={() => {
-                        const phone = officer.phoneNumber || officer.mobile;
-                        phone && copyToClipboard(phone, '手机号码');
+                        copyToClipboard(point.guardPhone!, '手机号码');
                       }}
                       className="copy-btn"
                     />
                   </div>
                 )}
 
-                {/* 微信号 */}
-                {officer.wechatId && (
-                  <div className="contact-item">
-                    <div className="contact-info">
-                      <span className="contact-icon">💬</span>
-                      <span>微信号：{officer.wechatId}</span>
-                    </div>
-                    <Button
-                      type="text"
-                      icon={<CopyOutlined />}
-                      onClick={() => {
-                        copyToClipboard(officer.wechatId!, '微信号');
-                      }}
-                      className="copy-btn"
-                    />
-                  </div>
-                )}
 
-                {/* 点位 */}
-                {/* {officer.points && officer.points.length > 0 && (
-                  <div className="contact-item">
-                    <div className="contact-info">
-                      <EnvironmentOutlined className="contact-icon" />
-                      <span>点位：</span>
-                      <ul>
-                        {officer.points.map((point: any, index: number) => (
-                          <li key={index}>{point.building || '未知楼栋'}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )} */}
-
-                {/* 备注 */}
-                {officer.remark && (
-                  <div className="contact-item">
-                    <div className="contact-info">
-                      <span className="contact-icon">📝</span>
-                      <span>备注：{officer.remark}</span>
-                    </div>
-                  </div>
-                )}
               </div>
-
-              {/* 部门信息 - 支持新旧字段 */}
-              {/* <div className="contact-item">
-                <div className="contact-info">
-                  <span className="contact-icon">📧</span>
-                  <span>部门：{officer.deptName || officer.department}</span>
-                </div>
-              </div> */}
             </div>
           </div>
         </div>
