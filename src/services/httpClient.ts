@@ -59,7 +59,7 @@ class HttpClient {
         throw new Error(errorData.message || `请求失败: ${response.status} ${response.statusText}`);
       }
 
-      if(response.status === 500) {
+      if (response.status === 500) {
         message.error('服务器内部错误');
         throw new Error('500, 服务器内部错误');
       }
@@ -74,7 +74,7 @@ class HttpClient {
 
       const result = await response.json();
 
-      if(result.code !== 0) {
+      if (result.code !== 0) {
         message.error(result.msg);
         throw new Error(result.msg);
       }

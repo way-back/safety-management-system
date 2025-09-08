@@ -20,7 +20,7 @@ const Login: React.FC = () => {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       message.success('登录成功');
-      navigate('/regions');
+      navigate('/admin/regions');
     } catch (error: any) {
       message.error(error.message || '登录失败');
     } finally {
