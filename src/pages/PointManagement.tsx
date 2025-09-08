@@ -534,6 +534,10 @@ const handleDownloadTemplate = async () => {
                 label: dept.deptName,
                 value: dept.deptId,
               }))}
+              showSearch // 启用搜索功能
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              } // 本地搜索逻辑
             />
           </Form.Item>
           <Form.Item>
@@ -646,6 +650,10 @@ const handleDownloadTemplate = async () => {
                     label: dept.deptName,
                     value: dept.deptId,
                   }))}
+                  showSearch // 启用搜索功能
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  } // 本地搜索逻辑
                 />
               </Form.Item>
               {/* <Form.Item name="deptId" label="所属部门">
@@ -720,6 +728,10 @@ const handleDownloadTemplate = async () => {
                     label: guard.name,
                     value: guard.guardId,
                   }))}
+                  showSearch // 启用搜索功能
+                  filterOption={(input, option) =>
+                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  } // 本地搜索逻辑
                 />
               </Form.Item>
             </Col>

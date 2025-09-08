@@ -680,6 +680,11 @@ const RegionManagement: React.FC = () => {
               allowClear
               treeData={parentDepartments}
               fieldNames={{ label: 'label', value: 'value' }}
+              showSearch // 启用搜索功能
+              filterTreeNode={(inputValue, treeNode) => {
+                // 本地搜索逻辑：根据输入值匹配节点的 label
+                return (treeNode.label as string).toLowerCase().includes(inputValue.toLowerCase());
+              }}
             />
           </Form.Item>
 

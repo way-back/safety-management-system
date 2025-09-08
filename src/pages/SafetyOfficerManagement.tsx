@@ -519,7 +519,7 @@ const SafetyOfficerManagement: React.FC = () => {
                 <Select
                   placeholder="请选择部门"
                   allowClear
-                  // showSearch
+                  showSearch
                   filterOption={(input, option) =>
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                   }
